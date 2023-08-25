@@ -35,12 +35,7 @@ async def f_droppers(id: Annotated[Optional[str], Query()] = None,
 @router.post("/", response_model=Dropper, status_code=status.HTTP_201_CREATED)
 async def f_add_dropper(dropper: Dropper) -> Union[Dropper, HTTPException]:
     # Verify that no other dropper exist with same name or code
-    query = {
-        "name": dropper.name
-        } if not dropper.code else {
-        "$or": [{"name": dropper.name},
-                {"code": dropper.code}]
-        }
+    query = { "name": dropper.name } if not dropper.code else { "$or": [{"name": dropper.name}, {"code": dropper.code}] }
     if DropperHelper.search_dropper(query):
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -56,7 +51,11 @@ async def f_add_dropper(dropper: Dropper) -> Union[Dropper, HTTPException]:
 
 @router.put("/", response_model=Dropper, status_code=status.HTTP_200_OK)
 async def f_modify_dropper(dropper: Dropper) -> Union[Dropper, HTTPException]:
-    dropper_dict = {k: v for k, v in dropper.dict().items() if v is not None and k != "id"}
+    dropper_dict = {
+        k: v
+        for k, v in dropper.dict().items()
+        if v is not None and k != "id"
+    }
 
     if db_dropper_updated := db_client.droppers.find_one_and_update(
         {"_id": ObjectId(dropper.id) if dropper.id else None},
